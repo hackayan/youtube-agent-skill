@@ -52,6 +52,13 @@ click the title promised, open a question the viewer cannot close, and prove the
 - the runtime estimate at 150 words per minute
 - one line naming which formula the winning hook used and why it fits this idea
 
+## Writing in Hindi, Bengali or another language
+
+The scoring tools read English words. Hindi, Bengali and other non-Latin text gets a warning instead
+of a trustworthy score. Write and score the English version first, then translate the winner. Rewrite
+the idea in the viewer's own phrasing, not word for word. Keep technical terms in English where
+students actually say them that way.
+
 ## The gate
 
 Nothing here publishes. This skill writes and you publish. Every output ends in a block the user
