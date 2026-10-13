@@ -82,6 +82,12 @@ def score(t):
     name, hits = classify(t)
     return parts, verdict, name, hits
 
+def non_latin(t):
+    """True when most letters are outside ASCII. Every property here reads English words, so a Hindi or
+    Bengali hook scores low for the wrong reason - score its English version instead."""
+    letters = [c for c in t if c.isalpha()]
+    return bool(letters) and sum(not c.isascii() for c in letters) / len(letters) > 0.5
+
 def band(v): return "STRONG" if v >= 72 else "WORKABLE" if v >= 55 else "WEAK"
 
 def report(t, parts, verdict, name, hits):
@@ -93,6 +99,9 @@ def report(t, parts, verdict, name, hits):
     print(f"    formula      {name}" + (f"  ({hits} pattern{'s' if hits != 1 else ''} matched)" if hits else "  (no formula matched - that is usually a summary, not a hook)"))
     low = min(parts, key=parts.get)
     print(f"    weakest      {low} - {FIX[low]}")
+    if non_latin(t):
+        print("    WARNING      non-English script: this panel reads English words, so the score above is not")
+        print("                 meaningful. Score the English version of the hook, then translate it.")
 
 FIX = {
  "SPECIFICITY": "swap one adjective for a number, a name or a date",
@@ -109,14 +118,15 @@ def main():
     if "--hook" in a:
         lines = [a[a.index("--hook") + 1]]
     elif a and os.path.exists(a[0]):
-        lines = [l for l in open(a[0]).read().splitlines() if l.strip()]
+        lines = [l for l in open(a[0], encoding="utf-8").read().splitlines() if l.strip()]
     else:
         print(__doc__); sys.exit(1 if not a else 0)
     out = []
     for t in lines:
         parts, verdict, name, hits = score(t)
         out.append({"hook": t.strip(), "properties": parts, "verdict": verdict,
-                    "band": band(verdict), "formula": name, "matched": hits})
+                    "band": band(verdict), "formula": name, "matched": hits,
+                    "scored_reliably": not non_latin(t)})
     out.sort(key=lambda r: -r["verdict"])
     if as_json:
         print(json.dumps([{k: v for k, v in r.items() if k != "matched"} for r in out], indent=1)); return
